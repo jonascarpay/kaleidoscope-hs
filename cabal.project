@@ -1,0 +1,5 @@
+packages:
+  ./
+
+package kaleidoscope-hs
+  tests: True
