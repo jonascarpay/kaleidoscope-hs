@@ -7,6 +7,7 @@ module Token
     tok_frac,
     tok_int,
     tok_ident,
+    descrToken,
   )
 where
 

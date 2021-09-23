@@ -30,6 +30,8 @@ tokens :-
   if			{ tok If }
   then		{ tok Then }
   else		{ tok Else }
+  def			{ tok Def }
+  extern	{ tok Extern }
 
   "+"			{ tok Add }
   "-"			{ tok Sub }
