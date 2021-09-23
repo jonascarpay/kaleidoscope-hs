@@ -5,6 +5,8 @@ where
 
 import Foreign
 import Foreign.C
+import LLVM
+import LLVM.Context
 
 foreign import ccall "stdio.h printf" myprintf :: CString -> IO ()
 
@@ -18,4 +20,5 @@ someFunc :: IO ()
 someFunc = do
   withCString "hello\n" myprintf
   c_sin 2 >>= print
+  withLLVM $ pure ()
   print $ c_sin_pure 2

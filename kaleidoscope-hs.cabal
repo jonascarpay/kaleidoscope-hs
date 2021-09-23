@@ -40,6 +40,8 @@ library
     AST
     Lexer
     Lib
+    LLVM
+    LLVM.Context
     Parsec
     Parser
     Token
