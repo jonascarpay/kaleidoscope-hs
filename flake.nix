@@ -9,6 +9,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         overlay = self: _: {
+          LLVM-12 = pkgs.llvm_12.dev;
           hsPkgs =
             self.haskell-nix.project' rec {
               src = ./.;

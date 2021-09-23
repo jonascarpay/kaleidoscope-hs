@@ -32,6 +32,10 @@ common common-options
 library
   import:             common-options
   hs-source-dirs:     src
+
+  -- The exact name of the library below was found out by running
+  -- ${pkgs.llvm_12.dev}/bin/llvm-config --libs
+  extra-libraries:    LLVM-12
   exposed-modules:
     AST
     Lexer
