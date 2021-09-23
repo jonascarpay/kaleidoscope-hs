@@ -27,55 +27,29 @@ tokens :-
   $white+	;
   "#".*		;
 
-  let			{ tok Let }
-  in			{ tok In }
-  with		{ tok With }
-  inherit	{ tok Inherit }
-
   if			{ tok If }
   then		{ tok Then }
   else		{ tok Else }
-  true		{ tok TTrue }
-  false		{ tok TFalse }
-
-  break			{ tok Break }
-  continue	{ tok Continue }
-  var				{ tok Var }
 
   "+"			{ tok Add }
   "-"			{ tok Sub }
   "*"			{ tok Mul }
   "/"			{ tok Div }
-  "=="		{ tok Eq }
-  "/="		{ tok Neq }
   "<"			{ tok Lt }
   ">"			{ tok Gt }
-  "<="		{ tok Leq }
-  ">="		{ tok Geq }
-  "."			{ tok Dot }
-  "<-"		{ tok LArr }
-  "->"		{ tok RArr }
-
-  "^"		{ tok Caret }
-  "&"		{ tok Ampersand }
 
   ";"		{ tok Semicolon }
-  ":"		{ tok Colon }
   ","		{ tok Comma }
-  "="		{ tok Assign }
-  "@"		{ tok At }
 
   "("		{ tok LParen }
   ")"		{ tok RParen }
-  "["		{ tok LBrack }
-  "]"		{ tok RBrack }
   "{"		{ tok LBrace }
   "}"		{ tok RBrace }
 
-  $digit+											{ tok_num }
-  $idHead $idTail*						{ tok_ident }
-  \" ($stringChars # \")* \"	{ tok_string } -- TODO Use start codes to signal unterminated strings
-  "." ("/" $pathChar+)+ "/"?	{ tok_path }
+  $digit+							{ tok_int }
+  $digit* "." $digit+	{ tok_frac }
+
+  $idHead $idTail*				{ tok_ident }
 
 {
 lexer :: BS.ByteString -> Either SourcePos [(Token, SourcePos)]
@@ -119,4 +93,4 @@ alexInputPrevChar :: AlexInput -> Char
 alexInputPrevChar = aiPrevChar
 }
 
--- vim: ft=text:noet
+-- vim: ft=text:set noet:
