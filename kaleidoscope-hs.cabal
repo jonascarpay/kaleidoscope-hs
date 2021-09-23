@@ -29,12 +29,20 @@ common common-options
     -fhide-source-paths -Wpartial-fields
 
 library
-  import:          common-options
-  hs-source-dirs:  src
-  exposed-modules: Lib
+  import:             common-options
+  hs-source-dirs:     src
+  exposed-modules:
+    Lexer
+    Lib
+    Token
+
+  build-tool-depends: alex:alex -any
   build-depends:
+    , array
+    , bytestring
     , containers
     , mtl
+    , text
 
 executable kaleidoscope-hs-exe
   import:         common-options
