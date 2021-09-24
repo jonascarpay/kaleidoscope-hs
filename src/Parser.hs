@@ -32,7 +32,8 @@ pExpr :: Parser Expr
 pExpr =
   makeExprParser
     pTerm
-    [ [bin T.Mul Mul, bin T.Div Div],
+    [ [bin T.Lt Lt],
+      [bin T.Mul Mul, bin T.Div Div],
       [bin T.Add Add, bin T.Add Add]
     ]
   where

@@ -38,15 +38,15 @@ library
   extra-libraries:    LLVM-12
   exposed-modules:
     AST
+    Codegen
     Lexer
     Lib
-    LLVM
-    LLVM.Context
+    LLVM.Bindings
     Parsec
     Parser
     Token
 
-  build-tool-depends: alex:alex -any
+  build-tool-depends: alex:alex -any, c2hs:c2hs -any
   build-depends:
     , array
     , bytestring

@@ -19,4 +19,4 @@ data Def = Def Ident [Ident] Expr
 
 data Ext = Ext Ident [Ident]
 
-data Op = Add | Sub | Mul | Div
+data Op = Add | Sub | Mul | Div | Lt
