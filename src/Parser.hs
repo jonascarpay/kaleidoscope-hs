@@ -17,16 +17,16 @@ type Parser = P.Parser Token (Set String)
 pTop :: Parser TopLevel
 pTop =
   choice
-    [ TLExt <$> pExt,
+    [ TLProto <$> pProto,
       TLDef <$> pDef,
       TLExpr <$> pExpr
     ]
 
-pExt :: Parser Ext
-pExt = liftA2 Ext pIdent (parenList pIdent)
+pProto :: Parser FnProto
+pProto = liftA2 FnProto pIdent (parenList pIdent)
 
-pDef :: Parser Def
-pDef = liftA3 Def pIdent (parenList pIdent) pExpr
+pDef :: Parser FnDef
+pDef = liftA2 FnDef pProto pExpr
 
 pExpr :: Parser Expr
 pExpr =

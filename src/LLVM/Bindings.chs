@@ -14,16 +14,21 @@ module LLVM.Bindings
     BuilderRef,
     builderCreate,
     builderDispose,
+    builderSetInsertPoint,
 
     TypeRef,
     typeDouble,
+    typeFunction,
 
     ValueRef,
     constReal,
+    valueSetName,
 
     buildFAdd,
     buildFSub,
     buildFMul,
+    buildRetVoid,
+    buildRet,
     buildCall,
 
     RealPredicate(..),
@@ -32,7 +37,15 @@ module LLVM.Bindings
     buildUIToFP,
 
     functionLookup,
+    functionAdd,
     functionCountParams,
+    functionGetParam,
+
+    Linkage(..),
+    linkageSet,
+
+    BasicBlockRef,
+    basicBlockAppend,
   )
 where
 
@@ -41,11 +54,19 @@ where
 #include <llvm-c/Core.h>
 
 import Foreign
+import Foreign.C
 
 {#context prefix = "LLVM" #}
 
 guardNull :: Ptr a -> Maybe (Ptr a)
 guardNull ptr = if ptr == nullPtr then Nothing else Just ptr
+
+{-# INLINE withArrayLen' #-}
+withArrayLen' :: Storable a => [a] -> ( (Ptr a, CUInt) -> IO b ) -> IO b
+withArrayLen' as k = withArrayLen as $ \len ptr -> k (ptr, fromIntegral len)
+
+withCStringLen' :: String -> ( (Ptr CChar, CULong) -> IO a ) -> IO a
+withCStringLen' s k = withCStringLen s $ \ (ptr, len) -> k (ptr, (fromIntegral len))
 
 {#pointer LLVMContextRef as ContextRef newtype#}
 {#fun LLVMContextCreate as contextCreate {} -> `ContextRef' #}
@@ -60,23 +81,41 @@ guardNull ptr = if ptr == nullPtr then Nothing else Just ptr
 {#fun LLVMDisposeBuilder as builderDispose {`BuilderRef'} -> `()' #}
 
 {#pointer LLVMTypeRef as TypeRef newtype#}
+deriving newtype instance Storable TypeRef
+
 {#fun LLVMDoubleTypeInContext as typeDouble {`ContextRef'} -> `TypeRef' #}
+-- TODO there is apparently no FunctionTypeInContext, so maybe we shouldn't bother getting the Double from the context either.
+-- The tutorial does get the doubles from a specified context though.
+{#fun LLVMFunctionType as typeFunction
+  { `TypeRef'
+  , withArrayLen'* `[TypeRef]'&
+  , `Bool'
+  } -> `TypeRef' #}
 
 {#pointer LLVMValueRef as ValueRef newtype#}
-
 deriving newtype instance Storable ValueRef
 
 guardNullValue :: ValueRef -> Maybe ValueRef
 guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
 
 {#fun LLVMConstReal as constReal {`TypeRef', `Double'} -> `ValueRef' #}
+{#fun LLVMSetValueName2 as valueSetName
+  { `ValueRef'
+  , withCStringLen'* `String'&
+  } -> `()'
+#}
 
 {#fun LLVMBuildFAdd as buildFAdd {`BuilderRef', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
 {#fun LLVMBuildFSub as buildFSub {`BuilderRef', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
 {#fun LLVMBuildFMul as buildFMul {`BuilderRef', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
+{#fun LLVMBuildRetVoid as buildRetVoid {`BuilderRef'} -> `ValueRef' #}
+{#fun LLVMBuildRet as buildRet {`BuilderRef', `ValueRef'} -> `ValueRef' #}
 
 {#fun LLVMGetNamedFunction as functionLookup {`ModuleRef', `String'} -> `Maybe ValueRef' guardNullValue #}
 {#fun LLVMCountParams as functionCountParams {`ValueRef'} -> `Int' #}
+{#fun LLVMGetParam as functionGetParam {`ValueRef', `Int'} -> `ValueRef' #}
+{#fun LLVMAddFunction as functionAdd {`ModuleRef', `String', `TypeRef'} -> `ValueRef' #}
+
 {#fun LLVMBuildCall2 as buildCall
   { `BuilderRef'
   , `TypeRef'
@@ -87,7 +126,18 @@ guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
   } -> `ValueRef'
 #}
 
+
+
 {#enum LLVMRealPredicate as RealPredicate {upcaseFirstLetter} deriving (Show) #}
 {#fun LLVMBuildFCmp as buildFCmp {`BuilderRef', `RealPredicate', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
 
 {#fun LLVMBuildUIToFP as buildUIToFP {`BuilderRef', `ValueRef', `TypeRef', `String'} -> `ValueRef' #}
+
+{#enum LLVMLinkage as Linkage {upcaseFirstLetter} deriving (Show) #}
+{#fun LLVMSetLinkage as linkageSet {`ValueRef', `Linkage'} -> `()' #}
+
+{#pointer LLVMBasicBlockRef as BasicBlockRef newtype#}
+{#fun LLVMAppendBasicBlockInContext as basicBlockAppend
+  { `ContextRef', `ValueRef', `String' } -> `BasicBlockRef' #}
+{#fun LLVMPositionBuilderAtEnd as builderSetInsertPoint
+  { `BuilderRef', `BasicBlockRef' } -> `()' #}

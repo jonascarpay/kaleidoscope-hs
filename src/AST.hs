@@ -5,8 +5,8 @@ import Data.Text (Text)
 type Ident = Text
 
 data TopLevel
-  = TLExt Ext
-  | TLDef Def
+  = TLProto FnProto
+  | TLDef FnDef
   | TLExpr Expr
 
 data Expr
@@ -15,8 +15,8 @@ data Expr
   | Bin Op Expr Expr
   | Call Ident [Expr]
 
-data Def = Def Ident [Ident] Expr
+data FnDef = FnDef FnProto Expr
 
-data Ext = Ext Ident [Ident]
+data FnProto = FnProto Ident [Ident]
 
 data Op = Add | Sub | Mul | Div | Lt
