@@ -40,6 +40,7 @@ module LLVM.Bindings
 
     functionLookup,
     functionAdd,
+    functionCountBasicBlocks,
     functionCountParams,
     functionGetParam,
 
@@ -117,6 +118,7 @@ guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
 
 {#fun LLVMGetNamedFunction as functionLookup {`ModuleRef', `String'} -> `Maybe ValueRef' guardNullValue #}
 {#fun LLVMCountParams as functionCountParams {`ValueRef'} -> `Int' #}
+{#fun LLVMCountBasicBlocks as functionCountBasicBlocks {`ValueRef'} -> `Int' #}
 {#fun LLVMGetParam as functionGetParam {`ValueRef', `Int'} -> `ValueRef' #}
 {#fun LLVMAddFunction as functionAdd {`ModuleRef', `String', `TypeRef'} -> `ValueRef' #}
 

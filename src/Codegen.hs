@@ -10,6 +10,7 @@ import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Text qualified as T
 import LLVM.Bindings
+import System.Exit qualified as Sys
 
 genExpr :: ContextRef -> ModuleRef -> BuilderRef -> Map Ident ValueRef -> Expr -> IO ValueRef
 genExpr _ _ _ bnd (Var name) = case M.lookup name bnd of
@@ -55,19 +56,26 @@ genProto ctx mdl (FnProto name args) = do
 
 genFunction :: ContextRef -> ModuleRef -> FnDef -> IO ValueRef
 genFunction ctx mdl (FnDef proto@(FnProto name args) body) = do
-  functionLookup mdl (T.unpack name) >>= \case
-    Nothing -> do
-      (fnVal, argVals) <- genProto ctx mdl proto
-      block <- basicBlockAppend ctx fnVal "entry"
-      withBuilder ctx $ \bld -> do
-        builderSetInsertPoint bld block
-        val <- genExpr ctx mdl bld (M.fromList (zip args argVals)) body
-        buildRet bld val
-    -- TODO VerifyFunction
-    -- TODO Remoove dangling invalid functions
-    Just _val -> error "the tutorial checks whether the returned value is empty, I don't know how to in llvm-c"
+  functionLookup mdl (T.unpack name) >>= \mFun -> do
+    (fnVal, argVals) <- case mFun of
+      Nothing -> genProto ctx mdl proto
+      -- Function already declared, now adding a body
+      Just fnVal -> do
+        nArgs <- functionCountParams fnVal
+        -- TODO don't die, just stop evaluation, but clean up
+        unless (nArgs == length args) $ Sys.die "invalid length"
+        nBlocks <- functionCountBasicBlocks fnVal
+        unless (nBlocks == 0) $ Sys.die "function already has body"
+        argVals <- forM (take nArgs [0 ..]) $ functionGetParam fnVal
+        pure (fnVal, argVals)
+    block <- basicBlockAppend ctx fnVal "entry"
+    withBuilder ctx $ \bld -> do
+      builderSetInsertPoint bld block
+      val <- genExpr ctx mdl bld (M.fromList (zip args argVals)) body
+      buildRet bld val
 
--- undefined
+-- TODO VerifyFunction
+-- TODO Remoove dangling invalid functions
 
 withContext :: (ContextRef -> IO a) -> IO a
 withContext = bracket contextCreate contextDispose
