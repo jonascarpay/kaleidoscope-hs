@@ -1,4 +1,4 @@
-import Lib
+import REPL
 
 main :: IO ()
-main = someFunc
+main = runRepl

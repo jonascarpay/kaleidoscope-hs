@@ -1,18 +1,30 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Parser where
+module Parser (parse) where
 
 import AST
 import Control.Applicative
 import Control.Applicative.Combinators
 import Control.Monad.Combinators.Expr
+import Data.Bifunctor (first)
+import Data.ByteString (ByteString)
 import Data.Set (Set)
 import Data.Set qualified as S
+import Data.Vector qualified as V
+import Lexer (lexer)
 import Parsec qualified as P
 import Token (Token)
 import Token qualified as T
 
 type Parser = P.Parser Token (Set String)
+
+parse :: ByteString -> Either String TopLevel
+parse bs = do
+  case lexer bs of
+    Left pos -> Left (show pos)
+    Right ts ->
+      let v = V.fromList ((fst <$> ts) <> [T.EOF])
+       in first show $ P.runParser (v V.!) (pTop <* token T.EOF)
 
 pTop :: Parser TopLevel
 pTop =
@@ -23,10 +35,10 @@ pTop =
     ]
 
 pProto :: Parser FnProto
-pProto = liftA2 FnProto pIdent (parenList pIdent)
+pProto = token T.Extern >> liftA2 FnProto pIdent (parenList pIdent)
 
 pDef :: Parser FnDef
-pDef = liftA2 FnDef pProto pExpr
+pDef = token T.Def >> liftA3 (\fn args body -> FnDef (FnProto fn args) body) pIdent (parenList pIdent) pExpr
 
 pExpr :: Parser Expr
 pExpr =

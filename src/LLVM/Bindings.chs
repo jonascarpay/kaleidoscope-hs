@@ -10,6 +10,7 @@ module LLVM.Bindings
     ModuleRef,
     moduleCreate,
     moduleDispose,
+    moduleDump,
 
     BuilderRef,
     builderCreate,
@@ -23,6 +24,7 @@ module LLVM.Bindings
     ValueRef,
     constReal,
     valueSetName,
+    valueDump,
 
     buildFAdd,
     buildFSub,
@@ -75,6 +77,7 @@ withCStringLen' s k = withCStringLen s $ \ (ptr, len) -> k (ptr, (fromIntegral l
 {#pointer LLVMModuleRef as ModuleRef newtype#}
 {#fun LLVMModuleCreateWithNameInContext as moduleCreate {`String', `ContextRef'} -> `ModuleRef' #}
 {#fun LLVMDisposeModule as moduleDispose {`ModuleRef'} -> `()' #}
+{#fun LLVMDumpModule as moduleDump {`ModuleRef'} -> `()' #}
 
 {#pointer LLVMBuilderRef as BuilderRef newtype#}
 {#fun LLVMCreateBuilderInContext as builderCreate {`ContextRef'} -> `BuilderRef' #}
@@ -104,6 +107,7 @@ guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
   , withCStringLen'* `String'&
   } -> `()'
 #}
+{#fun LLVMDumpValue as valueDump {`ValueRef'} -> `()' #}
 
 {#fun LLVMBuildFAdd as buildFAdd {`BuilderRef', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
 {#fun LLVMBuildFSub as buildFSub {`BuilderRef', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}

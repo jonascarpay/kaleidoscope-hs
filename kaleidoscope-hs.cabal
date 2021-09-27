@@ -40,10 +40,10 @@ library
     AST
     Codegen
     Lexer
-    Lib
     LLVM.Bindings
     Parsec
     Parser
+    REPL
     Token
 
   build-tool-depends: alex:alex -any, c2hs:c2hs -any
@@ -51,9 +51,11 @@ library
     , array
     , bytestring
     , containers
+    , haskeline
     , mtl
     , parser-combinators
     , text
+    , vector
 
 executable kaleidoscope-hs-exe
   import:         common-options
