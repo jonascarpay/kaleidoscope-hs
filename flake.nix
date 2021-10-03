@@ -1,7 +1,7 @@
 {
   description = "kaleidoscope-hs";
 
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
+  inputs.haskellNix.url = "github:input-output-hk/haskell.nix/7421a25fb842e188eff6612f31a766e479f973a5";
   inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
