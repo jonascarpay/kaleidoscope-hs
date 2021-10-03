@@ -24,6 +24,7 @@ common common-options
   build-depends:      base >=4.9 && <5
   default-language:   Haskell2010
   default-extensions: ImportQualifiedPost
+  extra-libraries:    LLVM-12
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
     -Wincomplete-record-updates -Wredundant-constraints
@@ -35,7 +36,6 @@ library
 
   -- The exact name of the library below was found out by running
   -- ${pkgs.llvm_12.dev}/bin/llvm-config --libs
-  extra-libraries:    LLVM-12
   exposed-modules:
     AST
     Codegen
