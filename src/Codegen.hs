@@ -54,8 +54,8 @@ genProto ctx mdl (FnProto name args) = do
     pure argVal
   pure (fnVal, args')
 
-genFunction :: ContextRef -> ModuleRef -> FnDef -> IO ValueRef
-genFunction ctx mdl (FnDef proto@(FnProto name args) body) = do
+genFunction :: ContextRef -> ModuleRef -> PassManagerRef -> FnDef -> IO ValueRef
+genFunction ctx mdl pm (FnDef proto@(FnProto name args) body) = do
   functionLookup mdl (T.unpack name) >>= \mFun -> do
     (fnVal, argVals) <- case mFun of
       Nothing -> genProto ctx mdl proto
@@ -77,6 +77,7 @@ genFunction ctx mdl (FnDef proto@(FnProto name args) body) = do
     -- passing `val` instead of `fnVal` here _segfaults_!
     -- An extra layer of segfault-proofing might be nice.
     _ <- functionVerify fnVal PrintMessageAction
+    _ <- fpmRun pm fnVal
     pure val
 
 -- TODO Remoove dangling invalid functions
@@ -89,6 +90,15 @@ withBuilder ctx = bracket (builderCreate ctx) builderDispose
 
 withModule :: String -> ContextRef -> (ModuleRef -> IO a) -> IO a
 withModule name ctx = bracket (moduleCreate name ctx) moduleDispose
+
+withFunctionPassManager :: ModuleRef -> (PassManagerRef -> IO a) -> IO a
+withFunctionPassManager mdl k = bracket (fpmCreate mdl) fpmDispose $ \pm -> do
+  fpmAddInstructionCombining pm
+  fpmAddReassociate pm
+  fpmAddGVN pm
+  fpmAddCFGSimplification pm
+  _ <- fpmInitialize pm
+  k pm
 
 main :: IO ()
 main = do

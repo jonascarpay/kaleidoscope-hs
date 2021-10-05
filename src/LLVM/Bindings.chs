@@ -52,6 +52,16 @@ module LLVM.Bindings
 
     BasicBlockRef,
     basicBlockAppend,
+
+    PassManagerRef,
+    fpmCreate,
+    fpmInitialize,
+    fpmDispose,
+    fpmRun,
+    fpmAddInstructionCombining,
+    fpmAddReassociate,
+    fpmAddGVN,
+    fpmAddCFGSimplification,
   )
 where
 
@@ -59,6 +69,8 @@ where
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Analysis.h>
+#include <llvm-c/Transforms/InstCombine.h>
+#include <llvm-c/Transforms/Scalar.h>
 
 import Foreign
 import Foreign.C
@@ -161,3 +173,15 @@ fromLLVMBool = toEnum . fromIntegral
 {# fun LLVMVerifyFunction as functionVerify
   { `ValueRef', `VerifierFailureAction' } -> `Bool' fromLLVMBool
 #}
+
+{# pointer LLVMPassManagerRef as PassManagerRef newtype #}
+{# fun LLVMCreateFunctionPassManagerForModule as fpmCreate { `ModuleRef' } -> `PassManagerRef' #}
+{# fun LLVMDisposePassManager as fpmDispose { `PassManagerRef' } -> `()' #}
+{# fun LLVMInitializeFunctionPassManager as fpmInitialize { `PassManagerRef' } -> `Bool' fromLLVMBool #}
+{# fun LLVMRunFunctionPassManager as fpmRun { `PassManagerRef', `ValueRef' } -> `Bool' fromLLVMBool #}
+
+{# fun LLVMAddInstructionCombiningPass as fpmAddInstructionCombining { `PassManagerRef' } -> `()' #}
+{# fun LLVMAddReassociatePass as fpmAddReassociate { `PassManagerRef' } -> `()' #}
+-- GVN: https://en.wikipedia.org/wiki/Value_numbering
+{# fun LLVMAddGVNPass as fpmAddGVN { `PassManagerRef' } -> `()' #}
+{# fun LLVMAddCFGSimplificationPass as fpmAddCFGSimplification { `PassManagerRef' } -> `()' #}
