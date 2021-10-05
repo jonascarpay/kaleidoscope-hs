@@ -57,7 +57,8 @@ pTerm =
   choice
     [ Num <$> pNum,
       liftA2 Call pIdent (parenList pExpr),
-      Var <$> pIdent
+      Var <$> pIdent,
+      parens pExpr
     ]
 
 pIdent :: Parser Ident
