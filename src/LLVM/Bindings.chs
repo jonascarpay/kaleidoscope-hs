@@ -43,6 +43,9 @@ module LLVM.Bindings
     functionCountBasicBlocks,
     functionCountParams,
     functionGetParam,
+    functionVerify,
+
+    VerifierFailureAction (..),
 
     Linkage(..),
     linkageSet,
@@ -55,6 +58,7 @@ where
 -- https://github.com/haskell/c2hs/wiki/Implementation-of-Haskell-Binding-Modules
 
 #include <llvm-c/Core.h>
+#include <llvm-c/Analysis.h>
 
 import Foreign
 import Foreign.C
@@ -132,8 +136,6 @@ guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
   } -> `ValueRef'
 #}
 
-
-
 {#enum LLVMRealPredicate as RealPredicate {upcaseFirstLetter} deriving (Show) #}
 {#fun LLVMBuildFCmp as buildFCmp {`BuilderRef', `RealPredicate', `ValueRef', `ValueRef', `String'} -> `ValueRef' #}
 
@@ -147,3 +149,15 @@ guardNullValue (ValueRef ptr) = ValueRef <$> guardNull ptr
   { `ContextRef', `ValueRef', `String' } -> `BasicBlockRef' #}
 {#fun LLVMPositionBuilderAtEnd as builderSetInsertPoint
   { `BuilderRef', `BasicBlockRef' } -> `()' #}
+
+-- toLLVMBool :: Bool -> CInt
+-- toLLVMBool =  fromIntegral . fromEnum
+
+fromLLVMBool :: CInt -> Bool
+fromLLVMBool = toEnum . fromIntegral
+
+{# enum LLVMVerifierFailureAction as VerifierFailureAction {upcaseFirstLetter} deriving (Show) #}
+
+{# fun LLVMVerifyFunction as functionVerify
+  { `ValueRef', `VerifierFailureAction' } -> `Bool' fromLLVMBool
+#}

@@ -69,12 +69,16 @@ genFunction ctx mdl (FnDef proto@(FnProto name args) body) = do
         argVals <- forM (take nArgs [0 ..]) $ functionGetParam fnVal
         pure (fnVal, argVals)
     block <- basicBlockAppend ctx fnVal "entry"
-    withBuilder ctx $ \bld -> do
+    val <- withBuilder ctx $ \bld -> do
       builderSetInsertPoint bld block
       val <- genExpr ctx mdl bld (M.fromList (zip args argVals)) body
       buildRet bld val
+    -- TODO
+    -- passing `val` instead of `fnVal` here _segfaults_!
+    -- An extra layer of segfault-proofing might be nice.
+    _ <- functionVerify fnVal PrintMessageAction
+    pure val
 
--- TODO VerifyFunction
 -- TODO Remoove dangling invalid functions
 
 withContext :: (ContextRef -> IO a) -> IO a
